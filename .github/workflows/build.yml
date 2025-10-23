@@ -1,0 +1,46 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install unzip
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - name: Unzip project
+        run: unzip -o sweetpop_cafe_performance_flutter_project.zip
+
+      - name: Flutter Pub Get
+        run: flutter pub get
+        working-directory: sweetpop_cafe_performance_app
+
+      - name: Build APK (release)
+        run: flutter build apk --release
+        working-directory: sweetpop_cafe_performance_app
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: sweetpop_cafe_performance_app/build/app/outputs/flutter-apk/app-release.apk
